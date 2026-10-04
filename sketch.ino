@@ -1,28 +1,40 @@
-const int SENSOR_PIN = 34;
-const int LED_PIN = 14;
+// ADC Pin Definitions
+const int POT_PIN = 34; // Potentiometer signal pin
+const int LDR_PIN = 35; // LDR voltage divider signal pin
 
+// Timing Variables
 unsigned long lastPrintTime = 0;
-const unsigned long printInterval = 500;
+const unsigned long printInterval = 500; // 500 ms interval
 
 void setup() {
   Serial.begin(115200);
-  pinMode(SENSOR_PIN, INPUT);
-  pinMode(LED_PIN, OUTPUT);
+  pinMode(POT_PIN, INPUT);
+  pinMode(LDR_PIN, INPUT);
 }
 
 void loop() {
-  int rawValue = analogRead(SENSOR_PIN); // 0 to 4095
+  unsigned long currentMillis = millis();
 
-  // Map 12-bit ADC (0-4095) to 8-bit PWM LED brightness (0-255)
-  int pwmValue = map(rawValue, 0, 4095, 0, 255);
-  analogWrite(LED_PIN, pwmValue);
+  if (currentMillis - lastPrintTime >= printInterval) {
+    lastPrintTime = currentMillis;
 
-  // Print reading every 500ms
-  if (millis() - lastPrintTime >= printInterval) {
-    lastPrintTime = millis();
-    Serial.print("Raw: ");
-    Serial.print(rawValue);
-    Serial.print(" | LED PWM: ");
-    Serial.println(pwmValue);
+    // Read 12-bit raw values (0 - 4095)
+    int potRaw = analogRead(POT_PIN);
+    int ldrRaw = analogRead(LDR_PIN);
+
+    // Convert raw ADC readings to voltages
+    float potVolt = (potRaw / 4095.0) * 3.3;
+    float ldrVolt = (ldrRaw / 4095.0) * 3.3;
+
+    // Output to Serial Monitor
+    Serial.print("POT -> Raw: ");
+    Serial.print(potRaw);
+    Serial.print(" (");
+    Serial.print(potVolt, 2);
+    Serial.print("V) | LDR -> Raw: ");
+    Serial.print(ldrRaw);
+    Serial.print(" (");
+    Serial.print(ldrVolt, 2);
+    Serial.println("V)");
   }
 }
